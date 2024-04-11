@@ -1,0 +1,28 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Pico Debug",
+            "cwd": "${workspaceRoot}",
+            "executable": "${command:cmake.launchTargetPath}",
+            "request": "launch",
+            "type": "cortex-debug",
+            "servertype": "pyocd",
+            "targetId": "rp2040",
+            // This may need to be "arm-none-eabi-gdb" for some previous builds
+            "gdbPath" : "C:\\Program Files (x86)\\GNU Arm Embedded Toolchain\\10 2021.10\\bin\\arm-none-eabi-gdb.exe",
+            "device": "RP2040",
+            "showDevDebugOutput": "raw",
+            "swoConfig":{
+                "swoFrequency": 30000000,
+            },
+            "svdFile": "C:\\Users\\pvdho\\Documents\\Programme\\pico\\pico-sdk\\src\\rp2040\\hardware_regs\\rp2040.svd",
+            "runToEntryPoint": "main",
+            // Work around for stopping at main on restart
+            "postRestartCommands": [
+                "break main",
+                "continue"
+            ]
+        }
+    ]
+}
