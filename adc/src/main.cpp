@@ -11,9 +11,12 @@
 #include <zephyr/device.h>
 #include <zephyr/devicetree.h>
 #include <zephyr/drivers/adc.h>
+#include <zephyr/drivers/sensor.h>
 #include <zephyr/kernel.h>
 #include <zephyr/sys/printk.h>
 #include <zephyr/sys/util.h>
+
+#include "usbdevice.h"
 
 #if !DT_NODE_EXISTS(DT_PATH(zephyr_user)) || \
 	!DT_NODE_HAS_PROP(DT_PATH(zephyr_user), io_channels)
@@ -28,6 +31,29 @@ static const struct adc_dt_spec adc_channels[] = {
 	DT_FOREACH_PROP_ELEM(DT_PATH(zephyr_user), io_channels,
 			     DT_SPEC_AND_COMMA)
 };
+
+// static const struct device *get_bme280_device(void)
+// {
+// 	const struct device *const dev = DEVICE_DT_GET_ANY(bosch_bme280);
+
+// 	if (dev == NULL) {
+// 		/* No such node, or the node does not have status "okay". */
+// 		printk("\nError: no device found.\n");
+// 		return NULL;
+// 	}
+
+// 	if (!device_is_ready(dev)) {
+// 		printk("\nError: Device \"%s\" is not ready; "
+// 		       "check the driver initialization logs for errors.\n",
+// 		       dev->name);
+// 		return NULL;
+// 	}
+
+// 	printk("Found device \"%s\", getting sensor data\n", dev->name);
+// 	return dev;
+// }
+using namespace pvh;
+static MyUsbDevice sUsbDev;
 
 int main(void)
 {
@@ -53,6 +79,12 @@ int main(void)
 			return 0;
 		}
 	}
+
+	// const struct device *dev = get_bme280_device();
+
+	// if (dev == NULL) {
+	// 	return 0;
+	// }
 
 	while (1) {
 		printk("ADC reading[%u]:\n", count++);
@@ -91,6 +123,17 @@ int main(void)
 				printk(" = %"PRId32" mV\n", val_mv);
 			}
 		}
+		sUsbDev.log();
+		
+		// struct sensor_value temp, press, humidity;
+		// sensor_sample_fetch(dev);
+		// sensor_channel_get(dev, SENSOR_CHAN_AMBIENT_TEMP, &temp);
+		// sensor_channel_get(dev, SENSOR_CHAN_PRESS, &press);
+		// sensor_channel_get(dev, SENSOR_CHAN_HUMIDITY, &humidity);
+
+		// printk("temp: %d.%06d; press: %d.%06d; humidity: %d.%06d\n",
+		//       temp.val1, temp.val2, press.val1, press.val2,
+		//       humidity.val1, humidity.val2);
 
 		k_sleep(K_MSEC(1000));
 	}

@@ -1,7 +1,7 @@
 {
     "cmake.configureSettings": {
         "WEST_PYTHON": "C:/Users/pvdho/Documents/Programme/zephyrproject/.venv/Scripts/python.exe",
-        "BOARD": "rpi_pico_w",
+        "BOARD": "esp32_devkitc_wroom/esp32/procpu",
     },
     "cmake.configureEnvironment":{
         "ZEPHYR_BASE" : "C:/Users/pvdho/Documents/Programme/zephyrproject/zephyr"
@@ -9,6 +9,6 @@
     "cmake.generator": "Ninja",
     "cmake.buildDirectory": "${sourceDirectory}/build",
     "cmake.sourceDirectory": [
-        "${workspaceFolder}\\adc",
+        "${workspaceFolder}\\wifi",
     ],
 }

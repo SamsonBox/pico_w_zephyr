@@ -9,7 +9,15 @@
 		io-channels = <&adc 0>, <&adc 1>;
 	};
 };
-
+/*
+&i2c0 {
+	bme280@76 {
+		compatible = "bosch,bme280";
+		reg = <0x76>;
+		status = "okay";
+	};
+};
+*/
 &adc {
 	#address-cells = <1>;
 	#size-cells = <0>;
