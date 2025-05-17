@@ -1,0 +1,5 @@
+menu "Custom libraries"
+
+rsource "wificonnect/Kconfig"
+
+endmenu

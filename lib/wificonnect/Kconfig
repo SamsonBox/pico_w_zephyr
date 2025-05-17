@@ -1,0 +1,4 @@
+config WIFI_CONNECT
+	bool "Wifi connect custom library"
+	help
+	  This option enables the Wifi connect custom library
