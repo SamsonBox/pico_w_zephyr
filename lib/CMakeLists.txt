@@ -1,1 +1,1 @@
-add_subdirectory_ifdef(CONFIG_WIFI_CONNECT custom)
+add_subdirectory_ifdef(CONFIG_WIFI_CONNECT wificonnect)
