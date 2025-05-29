@@ -12,10 +12,14 @@
 #include "wifi_connector.h"
 #endif
 
+#include "sntp_client.h"
+
 #ifdef CONFIG_TURTLE_WEB
 #include "turtle_http_server.h"
 static turtle_web::webserver sWebServer;
 #endif
+
+static sntp_client::sntp_client sSntpClient;
 
 #define DEV_OUT   DEVICE_DT_GET(DT_ALIAS(uartw1))
 #define DEV_TEMP2   DEVICE_DT_GET(DT_ALIAS(temp2))
@@ -34,6 +38,8 @@ public:
 			printk("Starting Web Server\n");
 			sWebServer.init();
 			sWebServer.start();
+			struct sntp_time oTime;
+			sSntpClient.do_sntp_request(oTime);
 			break;
 		case wificonnector::IConnecttionCallback::State::DISCONNECTED:
 			printk("Stopping Web Server\n");
