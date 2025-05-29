@@ -1,1 +1,2 @@
 add_subdirectory_ifdef(CONFIG_WIFI_CONNECT wificonnect)
+add_subdirectory_ifdef(CONFIG_TURTLE_WEB turtleweb)

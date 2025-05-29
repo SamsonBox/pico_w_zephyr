@@ -8,9 +8,30 @@
 	status = "okay";
 };
 
+&uart2 {
+	status = "okay";
+	w1: w1 {
+		compatible = "zephyr,w1-serial";
+		temp1: ds18b20_1 {
+			compatible = "maxim,ds18b20";
+			family-code = <0x28>;
+			resolution = <12>;
+			status = "okay";
+		};
+	};
+};
+
 / {
 	aliases {
 		led0 = &led0;
+		uartw1 = &uart2;
+		temp2 = &temp2;
+		rtc = &rtc;
+	};
+
+	wifi_ap: wifi_ap {
+		compatible = "espressif,esp32-wifi";
+		status = "okay";
 	};
 
 	leds {
@@ -20,5 +41,16 @@
 			label = "LED 0";
 		};
 	};
+
+	w1_pin: w1_1 {
+               compatible = "zephyr,w1-gpio";
+               gpios = <&gpio0 23 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN | GPIO_PULL_UP)>;
+			   temp2: ds18b20_2 {
+					compatible = "maxim,ds18b20";
+					family-code = <0x28>;
+					resolution = <12>;
+					status = "okay";
+				};
+       };
 };
 

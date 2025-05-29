@@ -1,5 +1,6 @@
 menu "Custom libraries"
 
 rsource "wificonnect/Kconfig"
+rsource "turtleweb/Kconfig"
 
 endmenu
