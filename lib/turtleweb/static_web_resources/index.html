@@ -1,62 +1,106 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
-    <script src="main.js"></script>
+    <meta charset="UTF-8">
     <title>Turtle Server</title>
+    <script src="main.js" defer></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 2rem;
+        }
+        .error {
+            color: red;
+        }
+        .temp-low {
+            color: red;
+        }
+        .temp-normal {
+            color: green;
+        }
+        .live-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: limegreen;
+            margin-left: 10px;
+        }
+        #relay {
+            font-weight: bold;
+            cursor: pointer;
+        }
+        form {
+            margin-top: 1rem;
+            padding: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            width: 300px;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        input {
+            margin-left: 0.5rem;
+        }
+        button {
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            border: none;
+            background-color: #007BFF;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:disabled {
+            background-color: #888;
+            cursor: not-allowed;
+        }
+        button:hover:enabled {
+            background-color: #0056b3;
+        }
+        #config-status {
+            margin-top: 0.5rem;
+        }
+    </style>
 </head>
 <body>
     <h1>Welcome to Turtle Server!</h1>
-    <p>Here are the current Parameter.</p>
+    <p>Hier sind die aktuellen Parameter.</p>
 
- <!--    <h4>LED Control</h4>
-    <p>The buttons below toggle the LED on the board, or print a message to the console if the board does not have an LED. This demonstrates dynamic handling of a POST request.</p>
-    <input id="led_on" type="button" value="LED on">
-    <input id="led_off" type="button" value="LED off"> -->
+    <h2>Uptime Counter <span class="live-indicator"></span></h2>
+    <p id="uptime">Lade...</p>
 
-    <h2>Uptime Counter</h2>
-    <p>Below is the device uptime.</p>
-    <p id="uptime"></p>
+    <h2>Aktuelle Temperatur</h2>
+    <p id="temp">Lade...</p>
 
-    <h2>Current Temperature</h4>
-    <p>Below is the current Temperature.</p>
-    <p id="temp"></p>
+    <h2>Relais-Zustand</h2>
+    <p id="relay">Lade...</p>
+    <small>(Zum Umschalten klicken)</small>
 
-    <!-- 
-    <h4>Network Statistics</h4>
-    <p>Below are the network statistics. This demonstrates streaming data from server to client using a websocket.</p>
-    <table>
-        <tr>
-            <td>Total bytes received</td>
-            <td id="bytes_recv"></td>
-        </tr>
-        <tr>
-            <td>Total bytes sent</td>
-            <td id="bytes_sent"></td>
-        </tr>
-        <tr>
-            <td>IPv6 packets received</td>
-            <td id="ipv6_pkt_recv"></td>
-        </tr>
-        <tr>
-            <td>IPv6 packets sent</td>
-            <td id="ipv6_pkt_sent"></td>
-        </tr>
-        <tr>
-            <td>IPv4 packets received</td>
-            <td id="ipv4_pkt_recv"></td>
-        </tr>
-        <tr>
-            <td>IPv4 packets sent</td>
-            <td id="ipv4_pkt_sent"></td>
-        </tr>
-        <tr>
-            <td>TCP bytes received</td>
-            <td id="tcp_bytes_recv"></td>
-        </tr>
-        <tr>
-            <td>TCP bytes sent</td>
-            <td id="tcp_bytes_sent"></td>
-        </tr>
-    </table> -->
+    <h2>Konfiguration</h2>
+    <form id="config-form">
+        <label>
+            Startzeit:
+            <input type="time" id="start-time" required>
+        </label>
+
+        <label>
+            Endzeit:
+            <input type="time" id="end-time" required>
+        </label>
+
+        <label>
+            Schaltetemperatur:
+            <input type="number" id="switch-temp" min="0" max="100" step="0.1" required> °C
+        </label>
+
+        <button type="submit" id="config-button">Speichern</button>
+    </form>
+
+    <p id="config-status"></p>
+
+    <p id="last-update">Letztes Update: --</p>
 </body>
 </html>

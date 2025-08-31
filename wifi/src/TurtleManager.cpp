@@ -74,6 +74,12 @@ namespace TurtleManager
             {
                 switch_heating_state(false);
             }
+            mHeatingOverride = false;
+            return;
+        }
+
+        if(mHeatingOverride)
+        {
             return;
         }
 
@@ -117,6 +123,7 @@ namespace TurtleManager
         data.mStartHeat = iStartTime;
         blk ^= 1;
         mEepromData.mSwitchData[blk] = data;
+        mEepromData.mValidBlock = blk;
         update_data();
     }
 
@@ -127,12 +134,28 @@ namespace TurtleManager
         data.mEndHeat = iEndTime;
         blk ^= 1;
         mEepromData.mSwitchData[blk] = data;
+        mEepromData.mValidBlock = blk;
         update_data();
     }
 
     void TurtleManager::set_relay_state(int iRelayState)
     {
+        mHeatingOverride = true;
         set_heating_state(iRelayState > 0);
+    }
+
+    void TurtleManager::update_settings(rtc_time &iStartTime, rtc_time &iEndTime, sensor_value &iSwitchingTemp)
+    {
+        uint8_t blk = mEepromData.mValidBlock;
+        SwitchingData data = mEepromData.mSwitchData[blk];
+        data.mEndHeat = iEndTime;
+        data.mStartHeat = iStartTime;
+        data.mTempLevel = iSwitchingTemp;
+        blk ^= 1;
+        mEepromData.mSwitchData[blk] = data;
+        mEepromData.mValidBlock = blk;
+        update_data();
+        mHeatingOverride = false;
     }
 
     int TurtleManager::get_temp_level(sensor_value &oTempLevel)
@@ -149,6 +172,7 @@ namespace TurtleManager
         data.mTempLevel = iTempLevel;
         blk ^= 1;
         mEepromData.mSwitchData[blk] = data;
+        mEepromData.mValidBlock = blk;
         return update_data();
     }
 

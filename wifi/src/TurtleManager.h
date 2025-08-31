@@ -35,6 +35,7 @@ public:
     void set_start_time(struct rtc_time& iStartTimr) override;
     void set_end_time(struct rtc_time& iEndTime) override;
     void set_relay_state(int iRelayState) override;
+    void update_settings(struct rtc_time& iStartTime, struct rtc_time& iEndTime, struct sensor_value& iSwitchingTemp) override;
 
 private:
     int init_eeprom();
@@ -60,6 +61,7 @@ private:
     sensor_value mCurrentTemperature;
     bool mHeatingState = false;
     bool mInit = false;
+    bool mHeatingOverride = false;
     static constexpr int32_t mHYSTERESE = 1;
     ISwitchingCallback* mSwCallback;
 

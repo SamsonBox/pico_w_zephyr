@@ -132,21 +132,36 @@ HeatingSwitch() {}
 void switch_to(bool iValue) override
 {
 	gpio_pin_set_dt(&HeatSwitch, iValue ? 1 : 0);
+	//gpio_pin_set_dt(&marker, iValue ? 1 : 0);
 	LOG_INF("switch_to %s", iValue ? "ON" : "OFF");
 }
+
 void init()
 {
 	int ret;
 	if (!gpio_is_ready_dt(&HeatSwitch)) {
-		LOG_ERR("GPIO not ready");
+		LOG_ERR("GPIO not ready HeatSwitch");
 		return;
 	}
+	// if (!gpio_is_ready_dt(&marker)) {
+	// 	LOG_ERR("GPIO not ready marker");
+	// 	return;
+	// }
 
 	ret = gpio_pin_configure_dt(&HeatSwitch, GPIO_OUTPUT_ACTIVE);
 	if (ret < 0) {
-		LOG_ERR("Failed to configure pin");
+		LOG_ERR("Failed to configure pin HeatSwitch");
 		return;
 	}
+
+	// ret = gpio_pin_configure_dt(&marker, GPIO_OUTPUT_ACTIVE);
+	// if (ret < 0) {
+	// 	LOG_ERR("Failed to configure pin HeatSwitch");
+	// 	return;
+	// }
+
+	gpio_pin_set_dt(&HeatSwitch, 0);
+	//gpio_pin_set_dt(&marker, 0);
 }
 };
 
@@ -231,6 +246,7 @@ net_mgmt_add_event_callback(&main_gmt_cb);
 
 	k_thread_priority_set (	k_current_get (), K_LOWEST_APPLICATION_THREAD_PRIO);
 
+	sHeatSwitch.init();
 	sTurtelManager.init();
 #ifdef CONFIG_TURTLE_WEB
 	sWebServer.set_data_interface(&sTurtelManager);
