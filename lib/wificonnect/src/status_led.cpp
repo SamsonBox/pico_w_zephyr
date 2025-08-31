@@ -37,6 +37,7 @@ namespace StatusLed
         const int priority = K_LOWEST_APPLICATION_THREAD_PRIO;
         mTid = 
         k_thread_create(&mThread, mStack, K_THREAD_STACK_SIZEOF(mStack), reinterpret_cast<k_thread_entry_t>(StatusLed::run), this, nullptr, nullptr,priority, 0, K_NO_WAIT);
+        k_thread_name_set(mTid, mThreadName);
     }
 
     void StatusLed::blink()

@@ -1,12 +1,32 @@
+#pragma once
 #include <inttypes.h>
 #include <zephyr/net/http/server.h>
 #include <zephyr/net/http/service.h>
+#include <zephyr/drivers/sensor.h>
+#include <zephyr/drivers/rtc.h>
 #include <zephyr/drivers/sensor.h>
 
 extern struct http_resource_desc _http_resource_desc_test_http_service_list_start[];
 extern struct http_resource_desc _http_resource_desc_test_http_service_list_end[];
 namespace turtle_web
 {
+class WebserverDataInterface
+{
+public:
+    // getter
+    virtual struct sensor_value get_temp() = 0;
+    virtual struct sensor_value get_switching_temp() = 0;
+    virtual struct rtc_time get_start_time() = 0;
+    virtual struct rtc_time get_end_time() = 0;
+    virtual int get_relay_state() = 0;
+
+    // setter
+    virtual void set_switching_temp(struct sensor_value& iSwitchingTemp) = 0;
+    virtual void set_start_time(struct rtc_time& iStartTimr) = 0;
+    virtual void set_end_time(struct rtc_time& iEndTime) = 0;
+    virtual void set_relay_state(int iRelayState) = 0;
+};
+
 class webserver
 {
 public:
@@ -26,6 +46,7 @@ public:
     static constexpr uint16_t service_port = CONFIG_NET_SAMPLE_HTTP_SERVER_SERVICE_PORT;
     static int service_fd;
     void set_temp(struct sensor_value iTemp);
+    void set_data_interface(WebserverDataInterface* iDataInterface);
 private:
     static int data_handler(http_client_ctx *client, http_data_status status,
 			  const http_request_ctx *request_ctx,
@@ -43,6 +64,7 @@ private:
     bool server_running = false;
     bool mInit = false;
     static struct sensor_value mCurrentTemp;
+    static WebserverDataInterface* mDataInterface;
 };
 
 }

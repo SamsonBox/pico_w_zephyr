@@ -11,7 +11,7 @@ module-str = APP
 
 config NET_SAMPLE_SNTP_SERVER_ADDRESS
 	string "SNTP server address"
-	default "pool.ntp.org"
+	default "ptbtime1.ptb.de"
 
 config NET_SAMPLE_SNTP_SERVER_PORT
 	int "SNTP server port"

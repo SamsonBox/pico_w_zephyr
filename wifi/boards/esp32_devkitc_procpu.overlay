@@ -21,12 +21,37 @@
 	};
 };
 
+&i2c0 { /* SDA PTE25, SCL PTE24, ISW PTE26 */
+	ds3231: ds3231@68 {
+        compatible = "maxim,ds3231-mfd";
+        reg = <0x68>;
+        status = "okay";
+
+        ds3231_sensor: ds3231_sensor {
+                compatible = "maxim,ds3231-sensor";
+                status = "okay";
+        };
+
+        ds3231_rtc: ds3231_rtc {
+                compatible = "maxim,ds3231-rtc";
+                status = "okay";
+				isw-gpios = <&gpio0 33 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
+        };
+};
+};
+
 / {
 	aliases {
 		led0 = &led0;
+		marker = &pio13;
 		uartw1 = &uart2;
 		temp2 = &temp2;
-		rtc = &rtc;
+		temp1 = &temp1;
+		i2ccontroller = &i2c0;
+		w1s = &w1;
+		heater = &pio34;
+		rtc = &ds3231_rtc;
+		rtctmp = &ds3231_sensor;
 	};
 
 	wifi_ap: wifi_ap {
@@ -39,6 +64,14 @@
 		led0: led_0 {
 			gpios = <&gpio0 2 GPIO_ACTIVE_HIGH>;
 			label = "LED 0";
+		};
+		pio13: pio_13 {
+			gpios = <&gpio0 13 GPIO_ACTIVE_HIGH>;
+			label = "GPIO 13";
+		};
+		pio34: pio_34 {
+			gpios = <&gpio0 34 GPIO_ACTIVE_HIGH>;
+			label = "GPIO 34";
 		};
 	};
 

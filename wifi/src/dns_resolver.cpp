@@ -69,31 +69,35 @@ void DnsResolver::set_address_info(struct dns_addrinfo iAdrInfo)
         if(mAdrInfo)
         {
             *mAdrInfo = iAdrInfo;
+			mAddressResolved = true;
+			set_finish();
         }
-            /* Notify test thread */
-	    k_sem_give(&mSemaphor);
-        mAddressResolved = true;
     }
     
 }
 
-int DnsResolver::resolve(const char *host, uint16_t port,int family, struct dns_addrinfo* oResolveInfo)
+void DnsResolver::set_finish()
+{
+	/* Notify test thread */
+	k_sem_give(&mSemaphor);
+}
+
+int DnsResolver::resolve(const char *host, int family, struct dns_addrinfo* oResolveInfo)
 {
     if(!oResolveInfo)
     {
         return -1;
     }
     mAdrInfo = oResolveInfo;
-    return dns_query(host, port, family, SOCK_DGRAM);
+    return dns_query(host, family, SOCK_DGRAM);
 }
 
-int DnsResolver::dns_query(const char *host, uint16_t port, int family, int socktype)
+int DnsResolver::dns_query(const char *host, int family, int socktype)
 {
 	int rv;
     static uint16_t dns_id;
 	/* Perform DNS query */
     mAddressResolved = false;
-    char addr_str[INET6_ADDRSTRLEN] = {0};
     k_sem_reset(&mSemaphor);
 	rv = dns_get_addr_info(host,
 				DNS_QUERY_TYPE_A,
@@ -111,11 +115,6 @@ int DnsResolver::dns_query(const char *host, uint16_t port, int family, int sock
 		LOG_INF("dns_get_addr_info response timed out (%d)", rv);
         return rv;
 	}
-	/* Store the port */
-	net_sin(&mAdrInfo->ai_addr)->sin_port = htons(port);
-	/* Print the found address */
-	zsock_inet_ntop(mAdrInfo->ai_addr.sa_family, &net_sin(&mAdrInfo->ai_addr)->sin_addr, addr_str, sizeof(addr_str));
-	LOG_INF("%s -> %s", host, addr_str);
 	return 0;
 }
 

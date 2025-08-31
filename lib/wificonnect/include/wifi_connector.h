@@ -1,3 +1,4 @@
+#pragma once
 #include <zephyr/net/net_if.h>
 #include <zephyr/net/net_event.h>
 #include <zephyr/net/wifi_mgmt.h>
@@ -18,7 +19,8 @@ public:
         DISCONNECTED,
         CONNECTED,
     };
-    virtual void connection_state_changed(IConnecttionCallback::State iNewState) = 0;
+    virtual void connection_st_state_changed(IConnecttionCallback::State iNewState) = 0;
+    virtual void connection_ap_state_changed(IConnecttionCallback::State iNewState) = 0;
 };
 class WifiAutoConnect
 {
@@ -32,17 +34,19 @@ class WifiAutoConnect
             CONNECTED,
         };
         ConnectionState get_state();
-        void set_state(ConnectionState iConnectionState);
+        void set_st_state(ConnectionState iConnectionState);
+        void set_ap_state(ConnectionState iConnectionState);
         void set_callbackifc(IConnecttionCallback* iCallback);
     private:
         int enable_ap_mode(void);
         void enable_dhcpv4_server(void);
+        void disable_dhcpv4_server(void);
         ConnectionState mState = ConnectionState::IDLE;
         static void net_mgmt_event_handler(net_mgmt_event_callback *cb,
-					 uint32_t mgmt_event, net_if *iface);
-        static constexpr uint32_t MGMT_EVENTS = (NET_EVENT_WIFI_CONNECT_RESULT | NET_EVENT_WIFI_DISCONNECT_RESULT |
+					 long long unsigned int mgmt_event, net_if *iface);
+        static constexpr long long unsigned int MGMT_EVENTS = (NET_EVENT_WIFI_CONNECT_RESULT | NET_EVENT_WIFI_DISCONNECT_RESULT |
 	                                             NET_EVENT_WIFI_AP_ENABLE_RESULT | NET_EVENT_WIFI_AP_DISABLE_RESULT |
-	                                             NET_EVENT_WIFI_AP_STA_CONNECTED | NET_EVENT_WIFI_AP_STA_DISCONNECTED);
+	                                             NET_EVENT_WIFI_AP_STA_CONNECTED | NET_EVENT_WIFI_AP_STA_DISCONNECTED );
         static void handle_wifi_connect_result(net_mgmt_event_callback *cb);
         static void handle_wifi_disconnect_result(net_mgmt_event_callback *cb);
         WifiAutoConnect();
@@ -69,10 +73,9 @@ WifiAutoConnect::WifiAutoConnect()
 
 	net_mgmt_add_event_callback(&mWifiMgmtCb);
     mLed.start();
-    mApIfc = net_if_get_wifi_sap();
-
 	/* Get STA interface in AP-STA mode. */
 	mStaIfc = net_if_get_wifi_sta();
+    mApIfc = net_if_get_wifi_sap();
     enable_ap_mode();
 };
 
@@ -94,10 +97,10 @@ void WifiAutoConnect::handle_wifi_connect_result(net_mgmt_event_callback *cb)
 	if (status->status)
     {
 		LOG_INF("Connection request failed (%d)\n", status->status);
-        instance->set_state(ConnectionState::IDLE);
+        instance->set_st_state(ConnectionState::IDLE);
         instance->connect();
 	} else {
-        instance->set_state(ConnectionState::CONNECTED);
+        instance->set_st_state(ConnectionState::CONNECTED);
 		LOG_INF("Connected to %s\n", SSID);
 	}
 }
@@ -114,14 +117,15 @@ void WifiAutoConnect::handle_wifi_disconnect_result(net_mgmt_event_callback *cb)
         LOG_INF("Disconnected\n");
     }
     WifiAutoConnect* instance = get_instance();
-    instance->set_state(ConnectionState::IDLE);
+    instance->set_st_state(ConnectionState::IDLE);
     instance->connect();
 }
 
 void WifiAutoConnect::net_mgmt_event_handler(net_mgmt_event_callback *cb,
-				    uint32_t mgmt_event, net_if *iface)
+				    long long unsigned int mgmt_event, net_if *iface)
 {
-	switch (mgmt_event) {
+	switch (mgmt_event) 
+    {
 	case NET_EVENT_WIFI_CONNECT_RESULT:
 		handle_wifi_connect_result(cb);
 		break;
@@ -144,6 +148,9 @@ void WifiAutoConnect::net_mgmt_event_handler(net_mgmt_event_callback *cb,
 
 		LOG_INF("station: " MACSTR " joined ", sta_info->mac[0], sta_info->mac[1],
 			sta_info->mac[2], sta_info->mac[3], sta_info->mac[4], sta_info->mac[5]);
+        WifiAutoConnect* instance = get_instance();
+        instance->set_ap_state(ConnectionState::CONNECTED);
+        instance->enable_dhcpv4_server();
 		break;
 	}
 	case NET_EVENT_WIFI_AP_STA_DISCONNECTED: 
@@ -152,6 +159,9 @@ void WifiAutoConnect::net_mgmt_event_handler(net_mgmt_event_callback *cb,
 
 		LOG_INF("station: " MACSTR " leave ", sta_info->mac[0], sta_info->mac[1],
 			sta_info->mac[2], sta_info->mac[3], sta_info->mac[4], sta_info->mac[5]);
+        WifiAutoConnect* instance = get_instance();
+        instance->set_ap_state(ConnectionState::IDLE);
+        instance->disable_dhcpv4_server();
 		break;
 	}
 	default:
@@ -216,7 +226,24 @@ void WifiAutoConnect::set_callbackifc(IConnecttionCallback* iCallback)
     mCallback = iCallback;
 }
 
-void WifiAutoConnect::set_state(WifiAutoConnect::ConnectionState iConnectionState)
+void WifiAutoConnect::set_ap_state(ConnectionState iConnectionState)
+{
+    switch (iConnectionState)
+    {
+    case WifiAutoConnect::ConnectionState::CONNECTED:
+    {
+        mCallback->connection_ap_state_changed(IConnecttionCallback::State::CONNECTED);
+        break;
+    }
+    default:
+    {
+        mCallback->connection_ap_state_changed(IConnecttionCallback::State::DISCONNECTED);
+        break;
+    }
+    }
+}
+
+void WifiAutoConnect::set_st_state(WifiAutoConnect::ConnectionState iConnectionState)
 {
     mState = iConnectionState;
     switch (mState)
@@ -225,30 +252,53 @@ void WifiAutoConnect::set_state(WifiAutoConnect::ConnectionState iConnectionStat
         mLed.set_state(StatusLed::StatusLed::State::NONE);
         if(mCallback)
         {
-            mCallback->connection_state_changed(IConnecttionCallback::State::DISCONNECTED);
+            mCallback->connection_st_state_changed(IConnecttionCallback::State::DISCONNECTED);
         }
         break;
     case WifiAutoConnect::ConnectionState::CONNECTING:
         mLed.set_state(StatusLed::StatusLed::State::CONNECTING);
         if(mCallback)
         {
-            mCallback->connection_state_changed(IConnecttionCallback::State::DISCONNECTED);
+            mCallback->connection_st_state_changed(IConnecttionCallback::State::DISCONNECTED);
         }
         break;
     case WifiAutoConnect::ConnectionState::CONNECTED:
         mLed.set_state(StatusLed::StatusLed::State::CONNECTED);
         if(mCallback)
         {
-            mCallback->connection_state_changed(IConnecttionCallback::State::CONNECTED);
+            mCallback->connection_st_state_changed(IConnecttionCallback::State::CONNECTED);
         }
         break;
     default:
         mLed.set_state(StatusLed::StatusLed::State::NONE);
         if(mCallback)
         {
-            mCallback->connection_state_changed(IConnecttionCallback::State::DISCONNECTED);
+            mCallback->connection_st_state_changed(IConnecttionCallback::State::DISCONNECTED);
         }
         break;
+    }
+}
+
+void WifiAutoConnect::disable_dhcpv4_server(void)
+{
+    net_dhcpv4_server_stop(mApIfc);
+    static struct in_addr addr;
+	static struct in_addr netmaskAddr;
+
+	if (net_addr_pton(AF_INET, WIFI_AP_IP_ADDRESS, &addr)) {
+		LOG_ERR("Invalid address: %s", WIFI_AP_IP_ADDRESS);
+		return;
+	}
+
+	if (net_addr_pton(AF_INET, WIFI_AP_NETMASK, &netmaskAddr)) {
+		LOG_ERR("Invalid netmask: %s", WIFI_AP_NETMASK);
+		return;
+	
+    }
+
+    if (!net_if_ipv4_addr_rm(mApIfc, &addr))
+    {
+            LOG_ERR("unable to rm IP address for AP interface");
     }
 }
 
@@ -311,7 +361,7 @@ int WifiAutoConnect::enable_ap_mode(void)
 		ap_config.security = WIFI_SECURITY_TYPE_PSK;
 	}
 
-	enable_dhcpv4_server();
+	//enable_dhcpv4_server();
 
 	int ret = net_mgmt(NET_REQUEST_WIFI_AP_ENABLE, mApIfc, &ap_config,
 			   sizeof(struct wifi_connect_req_params));

@@ -1,0 +1,5 @@
+config I2C_LIB
+	bool "Generic i2c lib"
+	select I2C
+	help
+	  This option enables the i2c connect custom library

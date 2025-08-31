@@ -18,6 +18,8 @@ public:
 private:
     int do_sntp(int family, struct sntp_time& oTime);
     dns_resolver::DnsResolver mResolver;
+    struct dns_addrinfo addrInfo;
+    bool addr_resolved = false;
 
 };
 } // namespace sntp_client
