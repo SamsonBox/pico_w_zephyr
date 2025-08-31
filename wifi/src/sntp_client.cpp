@@ -56,6 +56,6 @@ int sntp_client::do_sntp(int family, struct sntp_time& oTime)
 
 end:
 	sntp_close(&ctx);
-    return 0;
+    return rv;
 }
 } // namespace sntp_client

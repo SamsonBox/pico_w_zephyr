@@ -60,6 +60,7 @@ namespace TurtleManager
 
     void TurtleManager::run(rtc_time iTime, sensor_value iTemperature)
     {
+        mCurrentTemperature = iTemperature; 
         uint8_t blk = mEepromData.mValidBlock;
         int32_t iTmp = iTemperature.val1;
         int32_t iTmpSwitch = mEepromData.mSwitchData[blk].mTempLevel.val1;
@@ -109,24 +110,29 @@ namespace TurtleManager
         return 0;
     }
 
-    int TurtleManager::set_start_time(rtc_time iStartTime)
+    void TurtleManager::set_start_time(rtc_time& iStartTime)
     {
         uint8_t blk = mEepromData.mValidBlock;
         SwitchingData data = mEepromData.mSwitchData[blk];
         data.mStartHeat = iStartTime;
         blk ^= 1;
         mEepromData.mSwitchData[blk] = data;
-        return update_data();
+        update_data();
     }
 
-    int TurtleManager::set_end_time(rtc_time iEndTime)
+    void TurtleManager::set_end_time(rtc_time& iEndTime)
     {
         uint8_t blk = mEepromData.mValidBlock;
         SwitchingData data = mEepromData.mSwitchData[blk];
         data.mEndHeat = iEndTime;
         blk ^= 1;
         mEepromData.mSwitchData[blk] = data;
-        return update_data();
+        update_data();
+    }
+
+    void TurtleManager::set_relay_state(int iRelayState)
+    {
+        set_heating_state(iRelayState > 0);
     }
 
     int TurtleManager::get_temp_level(sensor_value &oTempLevel)
@@ -156,5 +162,41 @@ namespace TurtleManager
     {
         switch_heating_state(iHeatingState);
         return 0;
+    }
+
+    sensor_value TurtleManager::get_temp()
+    {
+        return mCurrentTemperature;
+    }
+
+    sensor_value TurtleManager::get_switching_temp()
+    {
+        sensor_value sw_temp;
+        get_temp_level(sw_temp);
+        return sw_temp;
+    }
+
+    rtc_time TurtleManager::get_start_time()
+    {
+        rtc_time start_time;
+        get_start_time(start_time);
+        return start_time;
+    }
+
+    rtc_time TurtleManager::get_end_time()
+    {
+        rtc_time end_time;
+        get_end_time(end_time);
+        return end_time;
+    }
+
+    int TurtleManager::get_relay_state()
+    {
+        return mHeatingState? 1 : 0;
+    }
+
+    void TurtleManager::set_switching_temp(sensor_value &iSwitchingTemp)
+    {
+        set_temp_level(iSwitchingTemp);
     }
 } // namespace TurtleManager

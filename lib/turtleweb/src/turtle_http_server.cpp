@@ -163,8 +163,8 @@ namespace turtle_web
                 endtime.tm_hour, endtime.tm_min,
                 relay_state > 0 ? "true" : "false",
                 starttime.tm_hour, starttime.tm_min,
-                switchTemp.val1, switchTemp.val2,
-                curTemp.val1, curTemp.val2,
+                switchTemp.val1, (switchTemp.val2 / 10) % 100,
+                curTemp.val1, (curTemp.val2 / 10) % 100,
                 k_uptime_get()
                 );
                 //snprintf(reinterpret_cast<char*>(&uptime_buf[0]), sizeof(uptime_buf), "{ \"uptime\": %lld, \"temp\": %d.%06d }", k_uptime_get(), mCurrentTemp.val1, mCurrentTemp.val2);

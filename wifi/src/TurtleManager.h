@@ -1,6 +1,7 @@
 #pragma once
 #include <zephyr/drivers/rtc.h>
 #include <zephyr/drivers/sensor.h>
+#include "turtle_http_server.h"
 #include "24lc512.h"
 
 namespace TurtleManager
@@ -12,7 +13,7 @@ virtual ~ISwitchingCallback() = default;
 virtual void switch_to(bool iValue) = 0;
 };
 
-class TurtleManager
+class TurtleManager : public turtle_web::WebserverDataInterface 
 {
 public:
     TurtleManager(eeprom_24lc512::eeprom_24lc512& iEeprom, ISwitchingCallback& iSwitchingCallback);
@@ -20,12 +21,21 @@ public:
     void run(rtc_time iTime, sensor_value iTemperature);
     int get_start_time(struct rtc_time& oStartTime);
     int get_end_time(struct rtc_time& oEndTime);
-    int set_start_time(struct rtc_time iStartTime);
-    int set_end_time(struct rtc_time iEndTime);
     int get_temp_level(struct sensor_value& oTempLevel);
     int set_temp_level(struct sensor_value iTempLevel);
     int get_heating_state(bool& oHeatingState);
     int set_heating_state(bool iHeatingState);
+    // WebserverDataInterface
+    struct sensor_value get_temp() override;
+    struct sensor_value get_switching_temp() override;
+    struct rtc_time get_start_time() override;
+    struct rtc_time get_end_time() override;
+    int get_relay_state() override;
+    void set_switching_temp(struct sensor_value& iSwitchingTemp) override;
+    void set_start_time(struct rtc_time& iStartTimr) override;
+    void set_end_time(struct rtc_time& iEndTime) override;
+    void set_relay_state(int iRelayState) override;
+
 private:
     int init_eeprom();
     int update_data();

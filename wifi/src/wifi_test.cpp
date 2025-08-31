@@ -232,6 +232,9 @@ net_mgmt_add_event_callback(&main_gmt_cb);
 	k_thread_priority_set (	k_current_get (), K_LOWEST_APPLICATION_THREAD_PRIO);
 
 	sTurtelManager.init();
+#ifdef CONFIG_TURTLE_WEB
+	sWebServer.set_data_interface(&sTurtelManager);
+#endif
 
 	for(;;)
 	{
@@ -258,7 +261,7 @@ net_mgmt_add_event_callback(&main_gmt_cb);
 		} 
 
 		
-		struct rtc_time time;
+		struct rtc_time time = {0};;
 		if(NET_READY && sConIfc.do_sntp_request())
 		{
 			struct sntp_time oTime;
