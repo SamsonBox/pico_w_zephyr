@@ -57,7 +57,11 @@ namespace StatusLed
             }
             else if(mState == State::CONNECTED)
             {
-                led_state = true;
+                led_state = !led_state;
+                if(!led_state)
+                {
+                    k_msleep(mSllepTime*2);
+                }
                 //printf("set state to true\n");
             }
             else

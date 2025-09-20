@@ -1,6 +1,7 @@
 #include "time_handler.h"
 #include <time.h>
 #include <zephyr/logging/log.h>
+#include <zephyr/kernel.h>
 LOG_MODULE_REGISTER(TimeHandler, LOG_LEVEL_INF);
 #define RTC DEVICE_DT_GET(DT_ALIAS(rtc))
 TimeHandler::TimeHandler::TimeHandler()
@@ -10,11 +11,19 @@ TimeHandler::TimeHandler::TimeHandler()
 rtc_time TimeHandler::TimeHandler::get_time()
 {
     struct rtc_time tm;
+    time_t sec_time = 1757395728 + (k_uptime_get() / 1000);
+    struct tm* tm_time = gmtime(&sec_time);
     int ret = rtc_get_time(RTC, &tm);
     if (ret < 0)
     {
         LOG_INF("Cannot read date time: %d\n", ret);
         memset(&tm,0,sizeof(tm));
+        tm.tm_year = tm_time->tm_year;
+        tm.tm_mon = tm_time->tm_mon;
+        tm.tm_mday = tm_time->tm_mday;
+        tm.tm_hour = tm_time->tm_hour;
+        tm.tm_min = tm_time->tm_min;
+        tm.tm_sec = tm_time->tm_sec;
     }
     tm.tm_hour += isDST_Germany(tm.tm_year, tm.tm_mon, tm.tm_mday, tm.tm_hour) ? UTC_OFFSET + 1 : UTC_OFFSET;
     return tm;
@@ -80,18 +89,24 @@ bool TimeHandler::TimeHandler::isDST_Germany(int year, int month, int day, int h
 rtc_time TimeHandler::TimeHandler::get_time(struct sntp_time& iSntpTime)
 {
     struct rtc_time tm;
-    struct tm* tm_time = nullptr;
+    time_t sec_time = iSntpTime.seconds;
+	struct tm* tm_time = gmtime(&sec_time);
     int ret = rtc_get_time(RTC, &tm);
     if (ret < 0)
     {
-        LOG_INF("Cannot read date time: %d\n", ret);
+        LOG_INF("Cannot read rtc date time: %d. Using NTP Time\n", ret);
         memset(&tm,0,sizeof(tm));
+        tm.tm_year = tm_time->tm_year;
+        tm.tm_mon = tm_time->tm_mon;
+        tm.tm_mday = tm_time->tm_mday;
+        tm.tm_hour = tm_time->tm_hour;
+        tm.tm_min = tm_time->tm_min;
+        tm.tm_sec = tm_time->tm_sec;
+        tm.tm_hour += isDST_Germany(tm.tm_year, tm.tm_mon, tm.tm_mday, tm.tm_hour) ? UTC_OFFSET + 1 : UTC_OFFSET;
         return tm;
     }
     else
     {
-        time_t sec_time = iSntpTime.seconds;
-	    tm_time = gmtime(&sec_time);
         LOG_DBG("RTC: %02d/%02d/%02d %02d:%02d:%02d", 
             tm.tm_year + 1900,
             tm.tm_mon + 1,

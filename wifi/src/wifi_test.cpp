@@ -11,6 +11,7 @@
 #include <zephyr/drivers/gpio.h>
 
 #include <zephyr/net/net_event.h>
+#include <zephyr/drivers/watchdog.h>
 #include "time_handler.h"
 #include <errno.h>
 #ifdef CONFIG_WIFI_CONNECT
@@ -41,6 +42,16 @@ static I2cController::I2cDevice sEeprom(0x50,2);
 static eeprom_24lc512::eeprom_24lc512 s24lc512(sEeprom, sI2cController);
 const gpio_dt_spec marker = GPIO_DT_SPEC_GET(DT_ALIAS(marker), gpios);
 const gpio_dt_spec HeatSwitch = GPIO_DT_SPEC_GET(DT_ALIAS(heater), gpios);
+
+static struct wdt_timeout_cfg wdt_config = {
+	/* Expire watchdog after max window */
+	.window = {
+        .min = 0U,
+        .max = 15000U,
+    },
+	/* Reset SoC when watchdog timer expires. */
+	.flags = WDT_FLAG_RESET_SOC,
+};
 
 #ifdef CONFIG_WIFI_CONNECT
 wificonnector::WifiAutoConnect* wificonnector::WifiAutoConnect::mInstance=nullptr;
@@ -252,10 +263,27 @@ net_mgmt_add_event_callback(&main_gmt_cb);
 	sWebServer.set_data_interface(&sTurtelManager);
 #endif
 
+	const device *const wdt = DEVICE_DT_GET(DT_ALIAS(watchdog0));
+	int wdt_channel_id = wdt_install_timeout(wdt, &wdt_config);
+	if (wdt_channel_id < 0)
+	{
+	 	LOG_ERR("Watchdog install error\n");
+	 	return 0;
+	 }
+	int err = wdt_setup(wdt, WDT_OPT_PAUSE_HALTED_BY_DBG);
+	if (err < 0)
+	{
+	 	LOG_ERR("Watchdog setup error\n");
+	 	return 0;
+	}	
+	
+
 	for(;;)
 	{
+		wdt_feed(wdt, wdt_channel_id);
 		struct sensor_value temp;
-
+		temp.val1 = 10;
+		temp.val2 = 0;
 		int res = sensor_sample_fetch(DEV_TEMP1);
 		if (res != 0) {
 			LOG_INF("sample_fetch() failed: %d\n", res);
@@ -266,15 +294,9 @@ net_mgmt_add_event_callback(&main_gmt_cb);
 			if (res != 0) {
 				LOG_INF("channel_get() failed: %d\n", res);
 			}
-			else
-			{
-				LOG_INF("Temp:  %d.%06d", temp.val1, temp.val2);
-			}
-			if(res == 0)
-			{
-				sWebServer.set_temp(temp);
-			}
 		} 
+		LOG_INF("Temp:  %d.%06d", temp.val1, temp.val2);
+		sWebServer.set_temp(temp);
 
 		
 		struct rtc_time time = {0};;
