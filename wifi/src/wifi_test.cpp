@@ -43,7 +43,6 @@ const struct device* i2cdev =  DEVICE_DT_GET(DT_ALIAS(i2ccontroller));
 static I2cController::I2cController sI2cController(i2cdev);
 static I2cController::I2cDevice sEeprom(0x50,2);
 static eeprom_24lc512::eeprom_24lc512 s24lc512(sEeprom, sI2cController);
-const gpio_dt_spec marker = GPIO_DT_SPEC_GET(DT_ALIAS(marker), gpios);
 const gpio_dt_spec HeatSwitch = GPIO_DT_SPEC_GET(DT_ALIAS(heater), gpios);
 
 static struct wdt_timeout_cfg wdt_config = {
@@ -266,9 +265,6 @@ net_mgmt_add_event_callback(&main_gmt_cb);
 
 	sHeatSwitch.init();
 	sTurtelManager.init();
-#ifdef CONFIG_PUSH_OVER
-	sPushOver.init();
-#endif
 #ifdef CONFIG_TURTLE_WEB
 	sWebServer.set_data_interface(&sTurtelManager);
 #endif
@@ -338,6 +334,13 @@ net_mgmt_add_event_callback(&main_gmt_cb);
 				time.tm_sec);
 			sTurtelManager.run(time, temp);
 		}
+
+#ifdef CONFIG_PUSH_OVER
+		if(NET_READY)
+		{
+			sPushOver.send_message("Hallo");
+		}
+#endif
 		k_msleep(10000);
 		//k_yield ();
 	}

@@ -1,0 +1,25 @@
+config PUSH_OVER
+	bool "PushOver Library"
+	select NETWORKING
+	select WIFI
+	select GPIO
+	select NET_SHELL
+	select CPP
+	select NET_IPV4
+	select NET_TCP
+	select NET_SOCKETS
+	select POSIX_API
+	select TEST_RANDOM_GENERATOR
+	select NET_CONTEXT_NET_PKT_POOL
+	select NET_CONFIG_SETTINGS
+	select HTTP_CLIENT
+	select WEB_TOOLS
+	#select MBEDTLS
+	#select MBEDTLS_ENABLE_HEAP
+	#select MBEDTLS_KEY_EXCHANGE_ECDHE_RSA_ENABLED
+	#select MBEDTLS_ECP_DP_SECP256R1_ENABLED
+	#select MBEDTLS_ECDH_C
+	#select MBEDTLS_ECP_C
+	#select NET_SOCKETS_SOCKOPT_TLS
+	help
+	  This option enables the PushOver custom library
