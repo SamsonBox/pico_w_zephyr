@@ -22,6 +22,9 @@
 #include "i2ccontroller.h"
 #include "24lc512.h"
 #include "TurtleManager.h"
+#ifdef CONFIG_PUSH_OVER
+#include "pushover.h"
+#endif
 
 #ifdef CONFIG_TURTLE_WEB
 #include "turtle_http_server.h"
@@ -52,6 +55,10 @@ static struct wdt_timeout_cfg wdt_config = {
 	/* Reset SoC when watchdog timer expires. */
 	.flags = WDT_FLAG_RESET_SOC,
 };
+
+#ifdef CONFIG_PUSH_OVER
+static PushOver::PushOver sPushOver("a3p96izz9t8qab8bvpn8y66xayokxa","utboec9kw22vtmh4pkgqvgijcxbqba");
+#endif
 
 #ifdef CONFIG_WIFI_CONNECT
 wificonnector::WifiAutoConnect* wificonnector::WifiAutoConnect::mInstance=nullptr;
@@ -259,6 +266,9 @@ net_mgmt_add_event_callback(&main_gmt_cb);
 
 	sHeatSwitch.init();
 	sTurtelManager.init();
+#ifdef CONFIG_PUSH_OVER
+	sPushOver.init();
+#endif
 #ifdef CONFIG_TURTLE_WEB
 	sWebServer.set_data_interface(&sTurtelManager);
 #endif

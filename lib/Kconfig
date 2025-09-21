@@ -3,5 +3,7 @@ menu "Custom libraries"
 rsource "wificonnect/Kconfig"
 rsource "turtleweb/Kconfig"
 rsource "i2c/Kconfig"
+#rsource "pushover/Kconfig"
+rsource "webtools/Kconfig"
 
 endmenu

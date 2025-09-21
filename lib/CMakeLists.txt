@@ -1,3 +1,5 @@
 add_subdirectory_ifdef(CONFIG_WIFI_CONNECT wificonnect)
 add_subdirectory_ifdef(CONFIG_TURTLE_WEB turtleweb)
 add_subdirectory_ifdef(CONFIG_I2C_LIB i2c)
+add_subdirectory_ifdef(CONFIG_WEB_TOOLS webtools)
+add_subdirectory_ifdef(CONFIG_PUSH_OVER pushover)

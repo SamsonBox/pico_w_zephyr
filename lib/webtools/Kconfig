@@ -1,0 +1,13 @@
+config WEB_TOOLS
+	bool "Web custom library"
+	select NETWORKING
+	select WIFI
+	select GPIO
+	select NET_SHELL
+	select NET_L2_WIFI_SHELL
+	select CPP
+	select NET_DHCPV4
+	select NET_IPV4
+	select NET_TCP
+	help
+	  This option enables the Web custom library
