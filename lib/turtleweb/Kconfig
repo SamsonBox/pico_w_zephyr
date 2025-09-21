@@ -10,7 +10,7 @@ config TURTLE_WEB
 
 config HEAP_MEM_POOL_ADD_SIZE_TURTLE_WEB
 	int
-	default 20480 if TURTLE_WEB
+	default 4096 if TURTLE_WEB
 	default 0
 	help
 	  Make sure there is a minimal heap available for turtle web driver.
